@@ -71,7 +71,9 @@ The interactive mode is useful if there are multiple sources in the image, or if
 do not want used in the mosaic, or if there are artifacts that are confusing the cross-correlation method and
 you need to specify the object in the frame for the program to use for the alignment.
 
-
 Another important function of this program is that column and row median offsets are removed before mosaicing. 
 By default the program uses almost the entire array, avoiding 5 columns and rows around the edges, to determine the
-median level of each column and row. The range can be 
+median level of each column and row. The range can be set with the -mr and -mc switches. For faint point sources, the entire 
+array can be used since the few pixels involved with the source will not significantly affect the median in a column or row. 
+Another option is to use the -av or avoid mode switch, which will then interpret the range of columns and rows as the region
+of the array to avoid using for the median calculation. This is useful for cases where a large extended source is present in the middle of the field of view, such as when observing Jupiter. 
