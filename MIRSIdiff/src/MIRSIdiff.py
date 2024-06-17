@@ -2,7 +2,6 @@
 
 # MIRSI data reduction pipeline     Joseph Hora
 
-
 # Import all necessary packages and functions
 
 import numpy as np
@@ -16,7 +15,7 @@ from astropy.io.fits import getval
 import argparse
 
 # Version number of this program
-progversion = "v1.35 (2024/02/03)"
+progversion = "v1.4 (2024/05/10)"
 
 # Version history:
 #  v1.1 (2022/01/19) - Initial version
@@ -33,6 +32,8 @@ progversion = "v1.35 (2024/02/03)"
 #        - added option to avoid a range of pixels in the column-wise and row-wise medians
 #
 #  v1.30 (2023/04/17) convert from jupyter notebook to python
+#
+#  v1.4 (2024/05/10) - add log file construction
 
 
 # This function returns the filter name and wavelength of the filter wheel setup
