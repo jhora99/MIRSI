@@ -1,7 +1,7 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# # MIRSIphot - MIRSI image reduction and photometry software
+# # MIRSIphot - MIRSI image photometry 
+# Joseph L. Hora
+# Center for Astrophysics | Harvard & Smithsonian
+# jhora@cfa.harvard.edu
 
 # Import all necessary packages and functions
 
