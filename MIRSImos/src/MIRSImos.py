@@ -1,5 +1,8 @@
 
-# # MIRSImos - MIRSI image reduction software
+# # MIRSImos - MIRSI image mosaics from sky-subtracted frames
+# Joseph L. Hora
+# Center for Astrophysics | Harvard & Smithsonian
+# jhora@cfa.harvard.edu
 
 # Import all necessary packages and functions
 
@@ -10,12 +13,10 @@ import glob
 import re
 import sys
 
-# from astropy.utils.data import download_file
 from astropy.io import fits
 from astropy.io.fits import getval
 from astropy.io.fits import getheader
 from astropy.wcs import WCS
-
 
 # photometry /image alignment functions
 from photutils.centroids import centroid_sources
@@ -24,7 +25,6 @@ from image_registration import chi2_shift
 # For mosaic construction
 # from reproject import reproject_interp
 from reproject import reproject_exact
-# from reproject.mosaicking import reproject_and_coadd
 from reproject.mosaicking import find_optimal_celestial_wcs
 from astropy.stats import sigma_clip
 import warnings
@@ -32,7 +32,6 @@ warnings.filterwarnings('ignore')
 
 import argparse
 
-# MIRSI data reduction pipeline     Joseph Hora
 # Version number of this program
 progversion = "v1.41 (2024/02/14)"
 
@@ -50,7 +49,8 @@ progversion = "v1.41 (2024/02/14)"
 #  v1.20 (2022/04/11) - Jupiter runs
 #        - added option to avoid a range of pixels in the column-wise and row-wise medians
 #
-
+# v1.41 (2024/02/14)
+#        - add airmass correction to individual frames before mosaicing
 # Function for interactive position input in some modules below
 def onclick(event):
     print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
@@ -724,6 +724,7 @@ elif len(goodlist) > 0:
     if amass_corr:
         hdul[0].header.add_history("AIRMASS CORRECTION APPLIED TO INDIVIDUAL FRAMES")
         hdul[0].header['AMASSEXT'] = (get_extfactor(wavelength), 'EXTINCTION VALUE USED IN AMASSCORR')
+        hdul[0].header['AIRMASS'] = (1.0, 'FRAMES CORRECTED TO 1.0 AIRMASS')
     if faintmode:
         hdul[0].header.add_history("MEDIANS SUBTRACTED FROM INDIVIDUAL FRAMES")
         hdul[0].header.add_history(("DATA VALUES CLIPPED, ABS(DATA)<"+str('%10.5E' % faintmax)))
