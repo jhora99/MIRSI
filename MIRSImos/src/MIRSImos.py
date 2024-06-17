@@ -281,6 +281,7 @@ argParser.add_argument("-f", "--filename",
 argParser.add_argument("-a", "--Aframe", help="A frames only", action='store_true')
 argParser.add_argument("-mr", "--medrows", help="Range for Median calculations for rows", nargs=2, type=int)
 argParser.add_argument("-mc", "--medcols", help="Range for Median calculations for columns", nargs=2, type=int)
+argParser.add_argument("-av", "--avoidmode", help="Avoid the region defined by the columns and row settings")
 argParser.add_argument("-fm", "--faintmax", help="Faint source maximum value", type=float)
 argParser.add_argument("-ac", "--amasscorr", help="correct frames for airmass", action='store_true')
 argParser.add_argument("-s", "--skycut", help="Sky cutoff value (frames rejected if above)", type=float)
@@ -298,6 +299,8 @@ if args.datecode:
     datecode = args.datecode
 if args.object:
     objcode = args.object
+if args.avoidmode:
+    AvoidRegion = True
 if args.path:
     impath = args.path
 if args.range:
