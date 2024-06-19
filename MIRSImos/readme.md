@@ -71,9 +71,49 @@ The interactive mode is useful if there are multiple sources in the image, or if
 do not want used in the mosaic, or if there are artifacts that are confusing the cross-correlation method and
 you need to specify the object in the frame for the program to use for the alignment.
 
+## Column/row offset removal
+
 Another important function of this program is that column and row median offsets are removed before mosaicing. 
 By default the program uses almost the entire array, avoiding 5 columns and rows around the edges, to determine the
 median level of each column and row. The range can be set with the -mr and -mc switches. For faint point sources, the entire 
 array can be used since the few pixels involved with the source will not significantly affect the median in a column or row. 
 Another option is to use the -av or avoid mode switch, which will then interpret the range of columns and rows as the region
-of the array to avoid using for the median calculation. This is useful for cases where a large extended source is present in the middle of the field of view, such as when observing Jupiter. 
+of the array to avoid using for the median calculation. This is useful for cases where a large extended source is present in the 
+middle of the field of view, such as when observing Jupiter. 
+
+## Output file 
+
+By default, the program constructs an output file name based on parameters of the input files. The file is written to
+the directory where the input files are located.
+
+The "OBJECT" name in the first FITS file is used for the root of the output file name. If this keyword is not present,
+the user is prompted to enter the name. Spaces are replaced by 
+underscores to avoid them in the file name, and any parenthesis are removed.
+The filter name is appended, along with the range of image numbers used in the mosaic.
+The text "_mosaic.fits" is appended to the end. For example, a standard star mosaic name could be "Mu_UMa_10.57_1-20_mosaic.fits".
+
+## Airmass correction
+If the data were taken over a short period of time so that the airmass was relatively constant throughout the sequence, such as for
+the standard star observations, the user could choose not to apply an airmass correction to the frames and just use the median airmass
+for the file set, which is stored in the mosaic header. Then the airmass correction could be performed in the photometry step. However,
+if the airmass does change significantly during the observation, e.g. if the object is setting at low altitude or one just has a long sequence 
+of frames, then an airmass correction can be applied to the individual frames before mosaicing. The program uses extinction values based on
+Krisciunas, K., Sinton, W., Tholen et al. 1987 (PASP, 99, 887), which are as follows:
+```
+            median airmass
+     filter corrections
+----------------------------
+     7.8    0.458
+     8.7    0.120
+     9.8    0.151
+     10 N   0.151
+     10.3   0.074
+     11.6   0.081
+     12.5   0.125
+     20     0.419
+```
+
+## Mosaic construction
+The program uses the `find_optimal_celestial_wcs` and `reproject_exact` procedures from the `reproject` package to reproject each image
+to a common WCS, and then combines the images using averaging with sigma clipping (sigma=2). A "coadd.fits" image is also saved which records the
+number of overlapping frames at each point of the output mosaic. 
