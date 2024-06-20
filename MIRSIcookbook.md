@@ -4,11 +4,24 @@ Cookbook for MIRSI data reduction                         Joseph Hora
 
 This document shows some examples of how to reduce MIRSI data for the NEO observing program. 
 
-The first program 20230418_MIRSIdiff.py performs the A-B subtraction, to give you basically what you see on the screen when observing. It writes out both files, the B file is the inverse of the A file, to be used to make the mosaic or do photometry on to get a positive flux. The files are the same name as the input file but with a "sub.fits" at the end. 
+The first program 20230418_MIRSIdiff.py performs the A-B subtraction, to give you basically 
+what you see on the screen when observing. It writes out both files, the B file is the inverse 
+of the A file, to be used to make the mosaic or do photometry on to get a positive flux. The 
+files are the same name as the input file but with a "sub.fits" at the end. 
 
-The second program 20230418_MIRSImos.py reads in the subtracted files and takes out some of the array artifacts like column to column offsets that look like vertical stripes on the array, and applies an optional flat field or "gain" map. I have attached an example gain map that I use that we made from some calibration observations taken during engineering time. The program also aligns the images using one of three different modes, and makes a mosaic of the frames. The individual corrected frames are written out with a ".cen.fits" at the end of the filenames. 
+The second program 20230418_MIRSImos.py reads in the subtracted files and takes out some of 
+the array artifacts like column to column offsets that look like vertical stripes on the 
+array, and applies an optional flat field or "gain" map. I have attached an example gain map 
+that I use that we made from some calibration observations taken during engineering time. 
+The program also aligns the images using one of three different modes, and makes a mosaic 
+of the frames. The individual corrected frames are written out with a ".cen.fits" at the 
+end of the filenames. 
 
-The third program 20230419_MIRSIphot.py performs photometry on point sources in the images. You first run this on standard stars to determine the Jy/ADU factor. Then you can run the program on the NEO frames to get their flux. The program also does the airmass correction based on the average airmass read from the mosaic header (calculated by the MIRSImos program in the previous step). The program optionally measures the noise in the image and outputs an estimate of the 1-sigma point source sensitivity level.
+The third program 20230419_MIRSIphot.py performs photometry on point sources in the images. 
+You first run this on standard stars to determine the Jy/ADU factor. Then you can run the 
+program on the NEO frames to get their flux. The program also does the airmass correction 
+based on the average airmass read from the mosaic header (calculated by the MIRSImos program 
+in the previous step). The program optionally measures the noise in the image and outputs an estimate of the 1-sigma point source sensitivity level.
 
 If you run the programs with the -h option they will print out the information on what command line switches and options you use to specify the files to process and various modes of the programs. 
 
