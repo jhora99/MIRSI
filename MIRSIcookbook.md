@@ -1,6 +1,7 @@
 
-Cookbook for MIRSI data reduction                         Joseph Hora
-                                                          2032/04/20
+# Cookbook for MIRSI data reduction                         
+### Joseph Hora
+### 2023/04/20
 
 This document shows some examples of how to reduce MIRSI data for the NEO observing program. 
 
@@ -26,12 +27,12 @@ in the previous step). The program optionally measures the noise in the image an
 If you run the programs with the -h option they will print out the information on what command line switches and options you use to specify the files to process and various modes of the programs. 
 
 
-Step 1. Perform the image differencing and save the results as "*.sub.fits" files 
+## Step 1. Perform the image differencing and save the results as "*.sub.fits" files 
 
 
 This step uses the MIRSIdiff python program. Here is an example of the processing for the 230207 data:
 
-
+```
 > python .\20230418_MIRSIdiff.py  -h
 usage: MIRSIdiff [-h] [-i IRTFCODE] [-d DATECODE] [-o OBJECT] [-p PATH] [-r RANGE RANGE] [-v] [-l LOGFILE]
 
@@ -51,19 +52,19 @@ optional arguments:
   -v, --verbose         Print out list of files while processing
   -l LOGFILE, --logfile LOGFILE
                         Write MIRSI obseration log file
-
+```
 
 For this dataset, there was apparently an issue around file number 58-59 where two beam A frames were recorded back-to-back. In order for the A-B frames to be subtracted correctly, the data were processed in the following two steps. If all of the data were in A,B,A,B, etc. pattern, then the entire night could have been done with one command without specifying a range.
 
-
+```
 > python .\20230418_MIRSIdiff.py -i 2023A072 -d 230207 -p e:\MIRSI\NEOobs\230207 -v -l logfile.txt -r 1 58
 > python .\20230418_MIRSIdiff.py -i 2023A072 -d 230207 -p e:\MIRSI\NEOobs\230207 -v -r 60 166
-
+```
 
 Using the "-v" option, the file names and results are printed to the screen. The "-l logfile.txt" option made a log file for the entire night's data (that is not affected by the range option). The log file shows useful information including file numbers, object names, airmass, times, filters, exposure times, etc.
 
 
-Step 2: Removing artifacts and aligning images, making mosaics
+## Step 2: Removing artifacts and aligning images, making mosaics
 
 Then the MIRSImos program is run to align the images and create mosaics from the frames. The program reads in the subtracted files and takes out some of the array artifacts like column to column offsets that look like vertical stripes on the array, and applies an optional flat field or "gain" map. The gain map that I use ("gain.1.2.fits") was made from some calibration observations taken during engineering time.  The individual corrected frames are written out with a ".cen.fits" at the end of the filenames. Then the mosaic is made from these corrected frames. 
 
@@ -72,7 +73,7 @@ There are three options for aligning the images. One is the "auto" method, which
 The third alignment mode is "interactive", where each frame is displayed to the screen and the user can click on the source in the image to use to align the frames. You click twice on the center of the object you want to use, and the program calculates a centroid to determine the source position, so you don't have to be exact. If a frame is displayed that you don't want to use, because of some problem with the image, you separate your clicks by >5 pixels on the image and it will then ignore that frame and not use it in the mosaic. The interactive mode is useful if there are multiple sources in the image, or if there are some images that you do not want used in the mosaic, or if there are artifacts that are confusing the cross-correlation method and you need to specify the object in the frame for the program to use for the alignment.
 
 The mosaic is made by reprojecting all of the frames to a common WCS, and then averaging the frames with sigma clipping to remove bad pixels. The program generates a default output name that includes the object name, filter, and range of image files used in the mosaic, and ends with "_mosaic.fits". A second image showing the number of overlapping frames is also saved, with the "_coadd.fits" suffix. 
-
+```
 > python .\20230418_MIRSImos.py  -h
 usage: MIRSImos [-h] [-i IRTFCODE] [-d DATECODE] [-o OBJECT] [-p PATH] [-r RANGE RANGE] [-r2 RANGE2 RANGE2] [-g GAIN] [-m MASK] [-c CENMETHOD] [-n] [-f FILENAME]
 
@@ -98,11 +99,11 @@ optional arguments:
   -n, --nomosaic        Do not make mosaic of frames
   -f FILENAME, --filename FILENAME
                         name of output mosaic (overrides default name)
-
+```
 
 Here are the commands used to process two standard stars and one of the sets of NEO data from the 230207 night's data:
 
-
+```
 > python .\20230418_MIRSImos.py -i 2023A072 -d 230207 -p e:\MIRSI\NEOobs\230207 -r 1 20 -c auto
 Object name:  Mu_UMa
 Using cross-correlation alignment
@@ -152,15 +153,18 @@ mrs.2023A072.230207.neo.00058.b.sub.cen.fits offsets: -11.15 -45.08 -11.15 45.08
 now making mosaic....
 Mosaic size: 414 x 323
 writing mosaic file:  e:\MIRSI\NEOobs\230207/98943_10.57_21-58_mosaic.fits
+```
 
 
 
+## Step 3: Photometry of the MIRSI mosaics
 
-Step 3: Photometry of the MIRSI mosaics
+The MIRSIphot.py program performs photometry on the mosaics. Any photometry program could be used for this purpose, but this program has
+some convenient features for mid-IR photometry.
 
-The MIRSIphot.py program performs photometry on the mosaics. First run it on the standard star mosaic to measure the flux in ADUs. Then use that number, along with the known flux of the star in Jy at that wavelength to determine the Jy/ADU factor. Then that factor can be applied to the photometry for the NEO. The airmass correction is done as part of the photometry and is included in the numbers reported.
+First run the program on the standard star mosaic(s) to measure the flux in ADUs. Then use that number, along with the known flux of the star in Jy at that wavelength to determine the Jy/ADU factor. Then that factor can be applied to the photometry for the NEO. The airmass correction is done as part of the photometry and is included in the numbers reported.
 
-
+```
 > python .\20230419_MIRSIphot.py  -h
 usage: MIRSIphot [-h] [-j JYADU] [-e EXTFAC] [-s] [-d DOCAL DOCAL] filename
 
@@ -178,10 +182,11 @@ optional arguments:
   -s, --sigma           Determine 1 sigma uncertainty from background noise
   -d DOCAL DOCAL, --docal DOCAL DOCAL
                         Report flux using these values for Jy, ADU of cal star
-
+```
 
 First, do the photometry on a standard star. When the program is started, a window pops up showing the mosaic image. Click on the object you want to photometer, and the flux in ADUs is returned.
 
+```
 > python .\20230419_MIRSIphot.py  e:/MIRSI/NEOobs/230207/Mu_UMa_10.57_1-20_mosaic.fits
 (-0.7750801363442089, 0.0, 68.44108638185821)
 single click: button=1, x=445, y=547, xdata=170.854839, ydata=189.345161
@@ -214,14 +219,15 @@ Flux value below is in Jy
        pix       pix                 ...
 --- --------- --------- ------------ ... --------- --------------- ---------
   1 170.66739 190.39189    730672.01 ... 5883.9738       724788.03 87.892542
-
-
+```
+Below is a sample image of a standard star:
+![MIRSI image of calibration star]{f1.png}
 
 Using the "-d" option allows you to enter the flux of the object in Jy and the ADU value returned by the first step. Alternatively, you could instead use the "-j" option which allows you to directly enter the Jy/ADU factor to use.
 
 Now run the program with the same values, but on the NEO mosaic, and you will get the flux of the NEO in Jy. In this example, I have clicked on some random location because I don't see the NEO. It returns a low flux value. Also in this example, I have included the "-s" option, which will calculate the 1-sigma point source sensitivity value in the image. You do this by clicking twice to specify boxes in the image that have no point source, and it determines the sensitivity based on the noise in that section of the image. You can do this for many parts of the image to see that it is consistent in regions where you would expect the NEO to be. Clicking twice at the same location ends the process.
 
-
+```
 > python .\20230419_MIRSIphot.py -d 87.9 848675.11 -s e:/MIRSI/NEOobs/230207/98943_10.57_60-129_mosaic.fits
 
 Using calibration factor Jy/ADU:  1.035732E-04
@@ -261,12 +267,12 @@ Uncertainty:   0.01523  Jy
 single click: button=1, x=485, y=532, xdata=191.809677, ydata=180.765161
 double click: button=1, x=485, y=532, xdata=191.809677, ydata=180.765161
 done.
-
+```
 
 Running the photometry on another set of Mu UMa calibration data, it gives a different flux for the star. This indicates that the calibration has changed between the two measurements, probably due to sky conditions. 
 
 
-
+```
 > python .\20230419_MIRSIphot.py -d 87.9 848675.11 e:/MIRSI/NEOobs/230207/Mu_UMa_10.57_130-149_mosaic.fits
 
 Using calibration factor Jy/ADU:  1.035732E-04
@@ -283,3 +289,4 @@ Flux value below is in Jy
 --- --------- --------- ------------ ... --------- --------------- ---------
   1 180.51289 194.99553    583456.78 ... 6598.6927       576858.09 72.006748
 
+```
