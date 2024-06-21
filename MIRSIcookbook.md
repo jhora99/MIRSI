@@ -221,7 +221,7 @@ Flux value below is in Jy
   1 170.66739 190.39189    730672.01 ... 5883.9738       724788.03 87.892542
 ```
 Below is a sample image of a standard star:
-![MIRSI image of calibration star]{f1.png}
+![MIRSI image of calibration star](f1.png)
 
 Using the "-d" option allows you to enter the flux of the object in Jy and the ADU value returned by the first step. Alternatively, you could instead use the "-j" option which allows you to directly enter the Jy/ADU factor to use.
 
@@ -268,7 +268,9 @@ single click: button=1, x=485, y=532, xdata=191.809677, ydata=180.765161
 double click: button=1, x=485, y=532, xdata=191.809677, ydata=180.765161
 done.
 ```
-
+The image below shows an example of background regions selected by clicking in opposite corners of a box
+that you want to define:
+![MIRSI image of calibration star](f2.png)
 Running the photometry on another set of Mu UMa calibration data, it gives a different flux for the star. This indicates that the calibration has changed between the two measurements, probably due to sky conditions. 
 
 
