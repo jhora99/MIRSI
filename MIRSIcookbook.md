@@ -199,11 +199,11 @@ Flux value below is in ADU
        pix       pix                 ...
 --- --------- --------- ------------ ... --------- --------------- ---------
   1 170.92896 190.38207    730781.59 ... 5932.0532       724849.54 848675.11
-
+```
 
 If you want, you can re-run the program on the standard star using the known flux in Jy and the ADU value measured, and you can see that the flux of the star is returned in Jy.
 
-
+```
 > python .\20230419_MIRSIphot.py -d 87.9 848675.11 e:/MIRSI/NEOobs/230207/Mu_UMa_10.57_1-20_mosaic.fits
 
 Using calibration factor Jy/ADU:  1.035732E-04
