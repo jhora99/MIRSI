@@ -676,6 +676,9 @@ elif len(goodlist) > 0:
                                 #cenfunc=mean)#, masked=False, copy=False)
     med_image = np.nanmean(filtered_data, axis=0)
     med_image = np.where(coadd_image<1, np.nan, med_image)
+
+    # Calculate the average airmass of the observation
+    avgairmass = am_sum / len(goodlist)
     
     header = wcs_out.to_header()
     
@@ -724,15 +727,18 @@ elif len(goodlist) > 0:
         hdul[0].header.add_history(registration_text)
     hdul[0].header.append(('NMOSFRAM', len(goodlist),'Number of frames used to make mosaic'))
     hdul[0].header.add_history("IMAGES WERE COMBINED WITH SIGMA-CLIPPED MEAN (SIGMA=2)")
+    hdul[0].header['AMASSAVG'] = (avgairmass, 'AVERAGE AIRMASS IN MOSAIC')
+    hdul[0].header['MJD_OBS'] = (mjd_sum / len(goodlist), 'AVERAGE MJD OF OBSERVATION')
     if amass_corr:
         hdul[0].header.add_history("AIRMASS CORRECTION APPLIED TO INDIVIDUAL FRAMES")
         hdul[0].header['AMASSEXT'] = (get_extfactor(wavelength), 'EXTINCTION VALUE USED IN AMASSCORR')
         hdul[0].header['AIRMASS'] = (1.0, 'FRAMES CORRECTED TO 1.0 AIRMASS')
+    else:
+        hdul[0].header.add_history("NO AIRMASS CORRECTION APPLIED")
+        hdul[0].header['AIRMASS'] = (avgairmass, 'AVERAGE AIRMASS OF MOSAIC FRAMES')
     if faintmode:
         hdul[0].header.add_history("MEDIANS SUBTRACTED FROM INDIVIDUAL FRAMES")
         hdul[0].header.add_history(("DATA VALUES CLIPPED, ABS(DATA)<"+str('%10.5E' % faintmax)))
-    hdul[0].header['AMASSAVG'] = (am_sum / len(goodlist), 'AVERAGE AIRMASS IN MOSAIC')
-    hdul[0].header['MJD_OBS'] = (mjd_sum / len(goodlist), 'AVERAGE MJD OF OBSERVATION')
     outfname = objname.replace(" ","_")
 
     # Make file name from object, filter, and frame numbers with Ncoadds
