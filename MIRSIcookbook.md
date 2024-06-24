@@ -85,7 +85,7 @@ optional arguments:
                         IRTF Proposal code
   -d DATECODE, --datecode DATECODE
                         Observing date code (YYMMDD)
-  -o OBJECT, --object OBJECT
+   -o OBJECT, --object OBJECT
                         Object string in filename (default is *)
   -p PATH, --path PATH  path to data files
   -r RANGE RANGE, --range RANGE RANGE
@@ -99,6 +99,18 @@ optional arguments:
   -n, --nomosaic        Do not make mosaic of frames
   -f FILENAME, --filename FILENAME
                         name of output mosaic (overrides default name)
+  -a, --Aframe          A frames only
+  -mr MEDROWS MEDROWS, --medrows MEDROWS MEDROWS
+                        Range for Median calculations for rows
+  -mc MEDCOLS MEDCOLS, --medcols MEDCOLS MEDCOLS
+                        Range for Median calculations for columns
+  -av AVOIDMODE, --avoidmode AVOIDMODE
+                        Avoid the region defined by the columns and row settings
+  -fm FAINTMAX, --faintmax FAINTMAX
+                        Faint source maximum value
+  -ac, --amasscorr      correct frames for airmass
+  -s SKYCUT, --skycut SKYCUT
+                        Sky cutoff value (frames rejected if above)
 ```
 
 Here are the commands used to process two standard stars and one of the sets of NEO data from the 230207 night's data:
@@ -154,6 +166,10 @@ now making mosaic....
 Mosaic size: 414 x 323
 writing mosaic file:  e:\MIRSI\NEOobs\230207/98943_10.57_21-58_mosaic.fits
 ```
+### Faintmax value
+
+### SKYCUT value
+
 ### Airmass correction
 The airmass correction can be done on individual files in the mosaicing process, or in the photometry steps below. If the object 
 has been observed over a wide range of airmasses, it is best to correct it in the mosaicing step (using the -ac option). If
