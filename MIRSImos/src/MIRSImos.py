@@ -195,8 +195,8 @@ def process_mirsiframe(image_data, hdr, subflip, submed, doGain, ColMedSub, RowM
 
 # Define the location and filenames to search for processing
 
-propcode = "2023A072"
-datecode = "230416"
+propcode = "*"             # YYYYaNNN   where YYYY is the year, a is either A or B, and NNN is the proposal number
+datecode = "*"             # YYMMDD in UT, set by the observing program when logging in to observe at the IRTF
 objcode = "*"              # use * for any name after the datecode in the filename
 impath = "./"
 cenmethod = 'blind'
