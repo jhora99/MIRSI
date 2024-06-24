@@ -59,7 +59,7 @@ def is_real(item):
 
 
 donoise = False
-do_ext_calc = False
+do_ext_calc = True
 Jy_ADU = 1.0  # for calibration
 
 argParser = argparse.ArgumentParser(prog='MIRSIphot',
@@ -176,7 +176,14 @@ hdulist = fits.open(image)
 hdr = hdulist[0].header
 wcs = WCS(hdr)
 image_data = hdulist[0].data
-airmass_obs = 1.0 #hdr['AMASSAVG']
+
+# Try to read airmass value from header
+try:
+    airmass_obs = hdr['AIRMASS']
+except:
+    print('Warning: AIRMASS not in header, assuming 1.0')
+    airmass_obs = 1.0
+    
 wl = hdr['LAMBDA']
 # Krisciunas, K., Sinton, W., Tholen, K., Tokunaga, A., Golisch, W., Griep, D., ,
 # Journal: Publications of the Astronomical Society of the Pacific, Vol. 99, NO. AUGUST, P. 887, 1987
@@ -208,6 +215,8 @@ if do_ext_calc:
         am_ext = 0.125
     elif wl > 13:
         am_ext = 0.419
+    else:
+        print("Warning: undefined wavelength ",wl)
 
 mean, median, std = sigma_clipped_stats(image_data, sigma=3.0)
 print((mean, median, std))
