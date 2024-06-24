@@ -732,7 +732,7 @@ elif len(goodlist) > 0:
     if amass_corr:
         hdul[0].header.add_history("AIRMASS CORRECTION APPLIED TO INDIVIDUAL FRAMES")
         hdul[0].header['AMASSEXT'] = (get_extfactor(wavelength), 'EXTINCTION VALUE USED IN AMASSCORR')
-        hdul[0].header['AIRMASS'] = (1.0, 'FRAMES CORRECTED TO 1.0 AIRMASS')
+        hdul[0].header['AIRMASS'] = (0.0, 'AIRMASS CORRECTION APPLIED IN MOSAIC')
     else:
         hdul[0].header.add_history("NO AIRMASS CORRECTION APPLIED")
         hdul[0].header['AIRMASS'] = (avgairmass, 'AVERAGE AIRMASS OF MOSAIC FRAMES')
