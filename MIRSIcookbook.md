@@ -154,7 +154,13 @@ now making mosaic....
 Mosaic size: 414 x 323
 writing mosaic file:  e:\MIRSI\NEOobs\230207/98943_10.57_21-58_mosaic.fits
 ```
-
+### Airmass correction
+The airmass correction can be done on individual files in the mosaicing process, or in the photometry steps below. If the object 
+has been observed over a wide range of airmasses, it is best to correct it in the mosaicing step (using the -ac option). If
+the observation was short, e.g. for a standard star, and the airmass was almost constant during the observation, the correction
+could be done in the photometry step. If done in the mosaicing process, a note is made in the header and the AIRMASS value in 
+the header is set to zero. If no correction is done while mosaicing, the program determines the average airmass during the 
+observation and sets the AIRMASS in the header to the average value. The photometry program will then use this value when performing the correction in later steps.
 
 
 ## Step 3: Photometry of the MIRSI mosaics
