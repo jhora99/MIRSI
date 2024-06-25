@@ -54,14 +54,18 @@ optional arguments:
                         Write MIRSI obseration log file
 ```
 
-For this dataset, there was apparently an issue around file number 58-59 where two beam A frames were recorded back-to-back. In order for the A-B frames to be subtracted correctly, the data were processed in the following two steps. If all of the data were in A,B,A,B, etc. pattern, then the entire night could have been done with one command without specifying a range.
+For this dataset, there was apparently an issue around file number 58-59 where two beam A frames were recorded back-to-back. 
+In order for the A-B frames to be subtracted correctly, the data were processed in the following two steps. If all of the 
+data were in A,B,A,B, etc. pattern, then the entire night could have been done with one command without specifying a range.
 
 ```
 > python .\20230418_MIRSIdiff.py -i 2023A072 -d 230207 -p e:\MIRSI\NEOobs\230207 -v -l logfile.txt -r 1 58
 > python .\20230418_MIRSIdiff.py -i 2023A072 -d 230207 -p e:\MIRSI\NEOobs\230207 -v -r 60 166
 ```
 
-Using the "-v" option, the file names and results are printed to the screen. The "-l logfile.txt" option made a log file for the entire night's data (that is not affected by the range option). The log file shows useful information including file numbers, object names, airmass, times, filters, exposure times, etc.
+Using the "-v" option, the file names and results are printed to the screen. The "-l logfile.txt" option made a log file 
+for the entire night's data (that is not affected by the range option). The log file shows useful information including 
+file numbers, object names, airmass, times, filters, exposure times, etc.
 
 
 ## Step 2: Removing artifacts and aligning images, making mosaics
@@ -75,7 +79,9 @@ The third alignment mode is "interactive", where each frame is displayed to the 
 The mosaic is made by reprojecting all of the frames to a common WCS, and then averaging the frames with sigma clipping to remove bad pixels. The program generates a default output name that includes the object name, filter, and range of image files used in the mosaic, and ends with "_mosaic.fits". A second image showing the number of overlapping frames is also saved, with the "_coadd.fits" suffix. 
 ```
 > python .\20230418_MIRSImos.py  -h
-usage: MIRSImos [-h] [-i IRTFCODE] [-d DATECODE] [-o OBJECT] [-p PATH] [-r RANGE RANGE] [-r2 RANGE2 RANGE2] [-g GAIN] [-m MASK] [-c CENMETHOD] [-n] [-f FILENAME]
+usage: MIRSImos [-h] [-i IRTFCODE] [-d DATECODE] [-o OBJECT] [-p PATH] [-r RANGE RANGE] [-r2 RANGE2 RANGE2] [-g GAIN]
+                [-m MASK] [-c CENMETHOD] [-n] [-f FILENAME] [-a] [-mr MEDROWS MEDROWS] [-mc MEDCOLS MEDCOLS]
+                [-av AVOIDMODE] [-fm FAINTMAX] [-ac] [-s SKYCUT]
 
 Makes MIRSI mosaics frames from nod observations
 
@@ -167,8 +173,17 @@ Mosaic size: 414 x 323
 writing mosaic file:  e:\MIRSI\NEOobs\230207/98943_10.57_21-58_mosaic.fits
 ```
 ### Faintmax value
+If the source is known or expected to have a maximum flux less than a certain ADU level, the "faintmax" value can be 
+set with the -fm switch to flag as bad any pixel in the image that is above a certain cutoff level. This is useful for eliminating
+noise spikes in the image that can be sometimes much larger than the source, but not rejected by the sigma clipping and so make 
+their way into the final image as spurious peaks. This filtering is done for each frame separately, so a pixel marked as 
+bad in one image is not necessarily bad in other images. 
 
 ### SKYCUT value
+If the sky background level is changing throughout the observations, one might not want to use frames where the background
+level is above a certain cutoff. This is useful for nights where an occasional thin cloud will pass in front of the telescope
+and is visible by an increase in the sky background level. The raw frame median level is checked, and if it is above this 
+cutoff value set with the -s switch, the frame is excluded from the mosaic calculation.
 
 ### Airmass correction
 The airmass correction can be done on individual files in the mosaicing process, or in the photometry steps below. If the object 
