@@ -152,10 +152,6 @@ if args.docal:
 #     12.5   0.125
 #     20     0.419
 
-# am_ext = 0.120    # for 8.7 microns
-
-# am_ext = 0.081    # for 11.7 micron extinction
-
 matplotlib.use('Qt5Agg')
 
 i = 0
@@ -181,22 +177,11 @@ image_data = hdulist[0].data
 try:
     airmass_obs = hdr['AIRMASS']
 except:
-    print('Warning: AIRMASS not in header, assuming 1.0')
-    airmass_obs = 1.0
-    
+    print('Warning: AIRMASS not in header, assuming 0.0 (no correction)')
+    airmass_obs = 0.0
+
+# Get the wavelength of the observation (based on the filter used)
 wl = hdr['LAMBDA']
-# Krisciunas, K., Sinton, W., Tholen, K., Tokunaga, A., Golisch, W., Griep, D., ,
-# Journal: Publications of the Astronomical Society of the Pacific, Vol. 99, NO. AUGUST, P. 887, 1987
-# summary of extinction values on Mauna Kea 1980-1986
-# median airmass corrections:
-#     7.8    0.458
-#     8.7    0.120
-#     9.8    0.151
-#     10 N   0.151
-#     10.3   0.074
-#     11.6   0.081
-#     12.5   0.125
-#     20     0.419
 
 if do_ext_calc:
     if wl == 10.57:
@@ -217,6 +202,7 @@ if do_ext_calc:
         am_ext = 0.419
     else:
         print("Warning: undefined wavelength ",wl)
+        am_ext = 0.0
 
 mean, median, std = sigma_clipped_stats(image_data, sigma=3.0)
 print((mean, median, std))
@@ -273,11 +259,14 @@ else:
     print("\nFlux value below is in Jy")
 print(phot)
 
+# Get the WCS from the FITS header
 w = WCS(hdr)
 
 for ii in range(len(phot)):
-    if ((phot['aper_sum_bkgsub'][ii] > 8000)
-            and (phot['aper_sum_bkgsub'][ii] < 50000000)):
+    # Check to see if sum of ADUs in source is within certain limits;
+    # Not needed if the user has specified the source
+    if ((phot['aper_sum_bkgsub'][ii] > 0)
+            and (phot['aper_sum_bkgsub'][ii] < 150000000)):
         y.append(phot['aper_sum_bkgsub'][ii])
         x.append(i)
         wx, wy = w.wcs_pix2world(phot['xcenter'][ii],
@@ -288,6 +277,8 @@ for ii in range(len(phot)):
         i = i + 1
 
 # Estimate noise by determining standard deviation of background pixels
+# The user specifies a rectangular region by clicking on positions of
+# opposite corners of a region
 if donoise:
     matplotlib.use('Qt5Agg')
 
