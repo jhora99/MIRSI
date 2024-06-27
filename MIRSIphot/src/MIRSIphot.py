@@ -109,35 +109,18 @@ if args.docal:
 # ------------  ------  ------------  ------------   ----------  -------  -------  ------  ------- ------- ------- ------- ---------
 # Beta Cet      4128    00:43:35.372  -17:59:11.77   K0III       85.60    68.69    57.57   49.52   39.44   35.30   16.97   TIMMI2 
 
-# Jy_ADU = 8.406E-5 # Jy/ADU 2/22
-# Jy_ADU = 68.69/108235.92 # Jy/ADU for Beta Cet 8.7um
-# Jy_ADU = 49.52 /361538.2 # Jy/ADU for Beta Cet 10.57 
-# Jy_ADU = 39.44 /63975.963 # Jy/ADU for Beta Cet 11.7 um
+# Some fluxes assumed for standards:
+# Jy = 1341 alpha Her 10.57 microns
+# Jy = 169.023 for Eta Sgr  10.57 microns
 
-# Jy_ADU = 9.613E-5  # Jy/ADU 7/28 alpha Lyr
-# Jy_ADU = 1.0855E-4  # Jy/ADU 7/10 alpha Her
-# Jy_ADU = 1341/ 12024623  # Jy/ADU 8/04 alpha Her 1.1152116785698812E-4
+# Jy = 227 Beta And 10.57 microns 
+# Jy = 312 Beta And 8.7 
+# Jy = 176 alpha CMa 8.7    
+# Jy = 102 alpha CMa 11.7   
+# Jy = 119 alpha CMa 10.57  
+# Jy = 115 alpha Hya 10.57 microns (Cohen)
 
-# Jy_ADU = 169.023/1517073  # for Eta Sgr  (1552211 + 1481935.9)/2   1.1141E-4
-
-# 2022/10/06 observing: NEO 65803
-# Jy_ADU = 227/1764906.1  # Beta And 10.57 microns   1.28618E-4
-# Jy_ADU = 312/484823.53  # Beta And 8.7    6.435331222E-4
-# Jy_ADU = 176/357138.96  # alpha CMa 8.7    4.928053774E-4
-# Jy_ADU = 102/202965.65  # alpha CMa 11.7    5.0254809E-4
-# Jy_ADU = 119/1202977.8    # alpha CMa 10.57   9.89211e-05
-
-# 20230325 - NEO 2023_   alpha Hya
-# Jy_ADU = 115/966078.72     # alpha Hya 10.57 microns  115 Jy (Cohen)
-
-# 20230416 - 
-# Jy_ADU = 104.9/995433.95   # beta Gem 10.57 microns (-1.22 Cohen N-band, 104.9 Jy) file 21-40
-# Jy_ADU = 104.9/922326.1   # beta Gem 10.57 microns (-1.22 Cohen N-band, 104.9 Jy) file 247-266
-# Jy_ADU =  87.9/749526.86  # Mu UMa 10.57 microns (-0.96 10.57 microns 87.9 Jy) file 271-286  Jy/ADU = 0.00011727
-# Jy_ADU =  87.9/756194.19  # Mu UMa 10.57 microns (-0.96 10.57 microns 87.9 Jy) file 327-346  Jy/ADU = 0.00011623
-# Jy_ADU =  87.9/733218.79  # Mu UMa 10.57 microns (-0.96 10.57 microns 87.9 Jy) file 447-466  Jy/ADU = 0.00011988
-
-# Jy_ADU = (87.9/749526.86  + 87.9/756194.19)/2
+# Jy = 104.9 beta Gem 10.57 microns (-1.22 Cohen N-band, 104.9 Jy)
 
 # Krisciunas, K., Sinton, W., Tholen, K., Tokunaga, A., Golisch, W., Griep, D., ,
 # Journal: Publications of the Astronomical Society of the Pacific, Vol. 99, NO. AUGUST, P. 887, 1987
