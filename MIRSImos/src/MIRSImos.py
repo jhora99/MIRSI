@@ -1,8 +1,5 @@
 
-# # MIRSImos - MIRSI image mosaics from sky-subtracted frames
-# Joseph L. Hora
-# Center for Astrophysics | Harvard & Smithsonian
-# jhora@cfa.harvard.edu
+# # MIRSImos - MIRSI image reduction software
 
 # Import all necessary packages and functions
 
@@ -13,10 +10,12 @@ import glob
 import re
 import sys
 
+# from astropy.utils.data import download_file
 from astropy.io import fits
 from astropy.io.fits import getval
 from astropy.io.fits import getheader
 from astropy.wcs import WCS
+
 
 # photometry /image alignment functions
 from photutils.centroids import centroid_sources
@@ -25,6 +24,7 @@ from image_registration import chi2_shift
 # For mosaic construction
 # from reproject import reproject_interp
 from reproject import reproject_exact
+# from reproject.mosaicking import reproject_and_coadd
 from reproject.mosaicking import find_optimal_celestial_wcs
 from astropy.stats import sigma_clip
 import warnings
@@ -32,8 +32,9 @@ warnings.filterwarnings('ignore')
 
 import argparse
 
+# MIRSI data reduction pipeline     Joseph Hora
 # Version number of this program
-progversion = "v1.41 (2024/02/14)"
+progversion = "v1.5 (2024/07/22)"
 
 # Version history:
 #  v1.1 (2022/01/19) - Initial version
@@ -48,9 +49,11 @@ progversion = "v1.41 (2024/02/14)"
 #        - sign of offsets was changed
 #  v1.20 (2022/04/11) - Jupiter runs
 #        - added option to avoid a range of pixels in the column-wise and row-wise medians
+#  v. 1.5 (2024/07/22) 
+#        - check that filters and object names match in all frames used for mosaic, issue warning
+#          if non-matching ones found
 #
-# v1.41 (2024/02/14)
-#        - add airmass correction to individual frames before mosaicing
+
 # Function for interactive position input in some modules below
 def onclick(event):
     print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
@@ -195,8 +198,8 @@ def process_mirsiframe(image_data, hdr, subflip, submed, doGain, ColMedSub, RowM
 
 # Define the location and filenames to search for processing
 
-propcode = "*"             # YYYYaNNN   where YYYY is the year, a is either A or B, and NNN is the proposal number
-datecode = "*"             # YYMMDD in UT, set by the observing program when logging in to observe at the IRTF
+propcode = "2023A072"
+datecode = "230416"
 objcode = "*"              # use * for any name after the datecode in the filename
 impath = "./"
 cenmethod = 'blind'
@@ -281,7 +284,6 @@ argParser.add_argument("-f", "--filename",
 argParser.add_argument("-a", "--Aframe", help="A frames only", action='store_true')
 argParser.add_argument("-mr", "--medrows", help="Range for Median calculations for rows", nargs=2, type=int)
 argParser.add_argument("-mc", "--medcols", help="Range for Median calculations for columns", nargs=2, type=int)
-argParser.add_argument("-av", "--avoidmode", help="Avoid the region defined by the columns and row settings")
 argParser.add_argument("-fm", "--faintmax", help="Faint source maximum value", type=float)
 argParser.add_argument("-ac", "--amasscorr", help="correct frames for airmass", action='store_true')
 argParser.add_argument("-s", "--skycut", help="Sky cutoff value (frames rejected if above)", type=float)
@@ -299,8 +301,6 @@ if args.datecode:
     datecode = args.datecode
 if args.object:
     objcode = args.object
-if args.avoidmode:
-    AvoidRegion = True
 if args.path:
     impath = args.path
 if args.range:
@@ -400,7 +400,14 @@ if len(mirsilist)==0:
     print("Warning - no files found!")
     sys.exit(2)
 
-print("Object name: ", getval(mirsilist[0],'OBJECT'))
+
+try:
+    objname = getval(mirsilist[0],'OBJECT')
+except:
+    print('OBJECT keyword not found in FITS header')
+    objname = input('Input object name:')
+
+print("\nObject name: ", objname)
 # show the list of files selected
 # print(mirsilist)
 
@@ -455,14 +462,24 @@ if (cenmethod == 'auto'):
     raref = refhdulist[0].header['CRVAL1'] 
     decref = refhdulist[0].header['CRVAL2'] 
     ref_hdr = refhdulist[0].header
+    ref_filtname, ref_filtwave = get_filter(ref_hdr['GFLT'], ref_hdr['CVF'])
+    ref_obj = ref_hdr['OBJECT']
     
     for objimname in mirsilist:
         hdulist = fits.open(objimname, readonly = True)
         hdr = hdulist[0].header
         image_data = hdulist[0].data
-        image_data, hdulist[0].header = process_mirsiframe(image_data, hdulist[0].header, subflip, FrameMedSub, 
-                                                           doGain, ColMedSub, RowMedSub, NegMax, PosMax, 
-                                                           YCmin, YCmax, XRmin, XRmax, AvoidRegion)
+        img_filtname, img_filtwave = get_filter(hdr['GFLT'], hdr['CVF'])
+        if img_filtname != ref_filtname:
+            print("Warning! filters do not match:\n reference image ",ref_filtname,", ",
+                  objimname," filter: ",img_filtname)
+        if ref_obj != hdr['OBJECT']:
+            print("Warning! Object names do not match:\n first object: ",ref_obj,
+                  ", current object: ",hdr['OBJECT'])
+
+        image_data, hdulist[0].header = process_mirsiframe(image_data, 
+                hdulist[0].header, subflip, FrameMedSub, doGain, ColMedSub, RowMedSub, NegMax, PosMax,
+                YCmin, YCmax, XRmin, XRmax, AvoidRegion)
     
         x1, y1, exoff, eyoff = chi2_shift(ref_data, image_data, upsample_factor='auto')
         hdulist[0].data = image_data
@@ -505,10 +522,22 @@ elif cenmethod == 'blind':
             refhdr = hdulist[0].header
         if objimname == mirsilist[1]:
             skyhdr = hdulist[0].header
+        if mirsilist.index(objimname) == 0:
+            ref_filtname, ref_filtwave = get_filter(hdr['GFLT'], hdr['CVF'])
+            ref_obj = hdr['OBJECT']
+        else:
+            img_filtname, img_filtwave = get_filter(hdr['GFLT'], hdr['CVF'])
+            if img_filtname != ref_filtname:
+                print("Warning! filters do not match:\n reference image ",ref_filtname,", ",
+                      objimname," filter: ",img_filtname)
+            if ref_obj != hdr['OBJECT']:
+                print("Warning! Object names do not match:\n first object: ",ref_obj,
+                      ", current object: ",hdr['OBJECT'])
+            
         image_data = hdulist[0].data
-        image_data, hdulist[0].header = process_mirsiframe(image_data, hdulist[0].header, subflip, FrameMedSub, 
-                                                           doGain, ColMedSub, RowMedSub, NegMax, PosMax, 
-                                                           YCmin, YCmax, XRmin, XRmax, AvoidRegion)
+        image_data, hdulist[0].header = process_mirsiframe(image_data, hdulist[0].header, subflip,
+                                            FrameMedSub, doGain, ColMedSub, RowMedSub, NegMax, PosMax,
+                                            YCmin, YCmax, XRmin, XRmax, AvoidRegion)
         x1 = hdulist[0].header['CRPIX1']
         y1 = hdulist[0].header['CRPIX2']
         commenttext = hdulist[0].header['COMMENT']
@@ -573,6 +602,19 @@ elif cenmethod == 'interactive':
     for ref_image in mirsilist:
         refhdulist = fits.open(ref_image, readonly = True)
         ref_data = refhdulist[0].data
+        hdr = refhdulist[0].header
+        if mirsilist.index(ref_image) == 0:
+            ref_filtname, ref_filtwave = get_filter(hdr['GFLT'], hdr['CVF'])
+            ref_obj = hdr['OBJECT']
+        else:
+            img_filtname, img_filtwave = get_filter(hdr['GFLT'], hdr['CVF'])
+            if img_filtname != ref_filtname:
+                print("Warning! filters do not match:\n reference image ",ref_filtname,", ",
+                      objimname," filter: ",img_filtname)
+            if ref_obj != hdr['OBJECT']:
+                print("Warning! Object names do not match:\n first object: ",ref_obj,
+                      ", current object: ",hdr['OBJECT'])
+            
         ref_data, refhdulist[0].header = process_mirsiframe(ref_data, refhdulist[0].header, subflip, FrameMedSub, 
                                                            doGain, ColMedSub, RowMedSub, NegMax, PosMax, 
                                                            YCmin, YCmax, XRmin, XRmax, AvoidRegion)
@@ -646,7 +688,6 @@ elif len(goodlist) > 0:
     
     # Get the filter, object name, and coadds used to construct the output file name
     filtername, wavelength = get_filter(ref_hdr['GFLT'], ref_hdr['CVF'])
-    objname = ref_hdr['OBJECT']
     coadds = ref_hdr['CO_ADDS']
     
     for image in goodlist:
@@ -676,9 +717,6 @@ elif len(goodlist) > 0:
                                 #cenfunc=mean)#, masked=False, copy=False)
     med_image = np.nanmean(filtered_data, axis=0)
     med_image = np.where(coadd_image<1, np.nan, med_image)
-
-    # Calculate the average airmass of the observation
-    avgairmass = am_sum / len(goodlist)
     
     header = wcs_out.to_header()
     
@@ -727,18 +765,14 @@ elif len(goodlist) > 0:
         hdul[0].header.add_history(registration_text)
     hdul[0].header.append(('NMOSFRAM', len(goodlist),'Number of frames used to make mosaic'))
     hdul[0].header.add_history("IMAGES WERE COMBINED WITH SIGMA-CLIPPED MEAN (SIGMA=2)")
-    hdul[0].header['AMASSAVG'] = (avgairmass, 'AVERAGE AIRMASS IN MOSAIC')
-    hdul[0].header['MJD_OBS'] = (mjd_sum / len(goodlist), 'AVERAGE MJD OF OBSERVATION')
     if amass_corr:
         hdul[0].header.add_history("AIRMASS CORRECTION APPLIED TO INDIVIDUAL FRAMES")
         hdul[0].header['AMASSEXT'] = (get_extfactor(wavelength), 'EXTINCTION VALUE USED IN AMASSCORR')
-        hdul[0].header['AIRMASS'] = (0.0, 'AIRMASS CORRECTION APPLIED IN MOSAIC')
-    else:
-        hdul[0].header.add_history("NO AIRMASS CORRECTION APPLIED")
-        hdul[0].header['AIRMASS'] = (avgairmass, 'AVERAGE AIRMASS OF MOSAIC FRAMES')
     if faintmode:
         hdul[0].header.add_history("MEDIANS SUBTRACTED FROM INDIVIDUAL FRAMES")
         hdul[0].header.add_history(("DATA VALUES CLIPPED, ABS(DATA)<"+str('%10.5E' % faintmax)))
+    hdul[0].header['AMASSAVG'] = (am_sum / len(goodlist), 'AVERAGE AIRMASS IN MOSAIC')
+    hdul[0].header['MJD_OBS'] = (mjd_sum / len(goodlist), 'AVERAGE MJD OF OBSERVATION')
     outfname = objname.replace(" ","_")
 
     # Make file name from object, filter, and frame numbers with Ncoadds
