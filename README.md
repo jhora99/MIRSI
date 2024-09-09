@@ -1,4 +1,6 @@
 # MIRSI reduction programs
+The Mid-Infrared Spectrometer and Imager (MIRSI) is an instrument in use at the [NASA Infrared Telescope Facility](https://irtfweb.ifa.hawaii.edu/) (IRTF). It can obtain images in the 2-20 micron range, and optical images at 0.5 - 1 micron with an integrated CCD camera that views the same field through a dichroic mirror.
+
 See the [MIRSI paper](https://ui.adsabs.harvard.edu/abs/2024arXiv240902752H) for a description of MIRSI and some example images obtained with the camera.
 
 ## [MIRSIdiff](./MIRSIdiff)
