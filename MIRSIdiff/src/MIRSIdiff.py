@@ -139,6 +139,7 @@ times = []
 raoff = []
 deoff = []
 airmasses = []
+medflux = []
 allfilelist = glob.glob(searchpath)
 
 
@@ -157,6 +158,8 @@ for image in allfilelist:
     filtername, wavelength = get_filter(hdu_list[0].header['GFLT'],
                                         hdu_list[0].header['CVF'])
     beammode = hdu_list[0].header['BEAMPAT']
+    normfactor = hdu_list[0].header['CO_ADDS']*hdu_list[0].header['ITIME']
+    medflux.append(np.median(hdu_list[0].data)/normfactor)
     if beammode > 0:               # make list of files for sky subtraction
         filters.append(filtername)             # with only files in AB mode
         objects.append(hdu_list[0].header['OBJECT'])
@@ -192,8 +195,8 @@ if writelog:
                   getval(filelist[0],'PROG_ID'))
     logfile.write("\n                                      Observers: " +
                   getval(filelist[0],'OBSERVER'))
-    logfile.write("\n\nTIME(UT)   FRNUM     OBJECT     FILESTR  FILTER  COADDS   ITIME  BEAM   RAOFF   DEOFF   AIRMASS\n")
-    logfile.write("---------------------------------------------------------------------------------------------------\n")
+    logfile.write("\n\nTIME(UT)   FRNUM     OBJECT     FILESTR  FILTER  COADDS   ITIME  BEAM   RAOFF   DEOFF   AIRMASS    MEDIAN\n")
+    logfile.write("-------------------------------------------------------------------------------------------------------------\n")
 # Frames assumed to be taken in AB mode (alternating beams A and B images)
 for idx in range(0, len(filenamelist)):
     if verbose:
@@ -205,7 +208,7 @@ for idx in range(0, len(filenamelist)):
         logline = logline +  str("%8s" % filters[idx]) + str("%8i" % coadds[idx])
         logline = logline + str("%8.3f" % itimes[idx]) + str("%6s" % beams[idx])
         logline = logline + str("%7.2f " % raoff[idx]) + str("%7.2f" % deoff[idx])
-        logline = logline + str("%10.3f" % airmasses[idx]) + '\n'
+        logline = logline + str("%10.3f " % airmasses[idx]) + str("%10.1f" % medflux[idx]) + '\n'
         logfile.write(logline)
     if beams[idx] == 'a':
         imlist.append(filelist[idx])
