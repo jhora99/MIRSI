@@ -649,12 +649,12 @@ elif cenmethod == 'interactive':
             refhdulist[0].data = ref_data
             outimage = ref_image[:ref_image.find('sub.fits')]+'sub.cen.fits'
             if do_skycut:
-                if hdulist[0].header['I_MEDIAN']<skycutoff and hdulist[0].header['S_MEDIAN']<skycutoff:
+                if refhdulist[0].header['I_MEDIAN']<skycutoff and refhdulist[0].header['S_MEDIAN']<skycutoff:
                     goodlist.append(outimage)
             else:   
                 goodlist.append(outimage)
             am_sum += refhdulist[0].header['TCS_AM']
-            mjd_sum += hdulist[0].header['MJD_OBS']
+            mjd_sum += refhdulist[0].header['MJD_OBS']
             refhdulist.writeto(outimage, overwrite=True)
             refhdulist.close()
         else:
